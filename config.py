@@ -2,6 +2,8 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 __version__ = "0.1"
+lat="48.121842"
+lon="11.600352"
 
 
 # Setup project logger

@@ -1,6 +1,6 @@
 import requests
 
-def get_precipitation(lat, lon, date):
+def get_precipitation(lat, lon, first_date, last_date):
     """
     Return the list of the hourly precipitation (in mm)
     ---------------------
@@ -12,26 +12,30 @@ def get_precipitation(lat, lon, date):
     date: str
         selected date, in the format yyyy-mm-dd
     """
-    url = "https://api.brightsky.dev/weather?lat={lat}&lon={lon}&date={date}"
+    url = "https://api.brightsky.dev/weather?lat={lat}&lon={lon}&date={first_date}&last_date={last_date}"
 
-    resp = requests.get(url=url.format(lat=lat, lon=lon, date=date))
+    resp = requests.get(url=url.format(lat=lat, lon=lon, first_date=first_date, last_date=last_date))
     data = resp.json() # Check the JSON Response Content documentation below
 
     return [data["weather"][i]["precipitation"] for i in range(len(data["weather"]))]
 
-def test_precipitation():
+if __name__ == "__main__":
 
-    # Getting today's date
-    from datetime import date
-    today = date.today()
-    today = today.strftime("%Y-%m-%d") # formatting
-    # today = "2022-07-07" # It rained that day
+    # Getting now's date
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    last_date = now + timedelta(days=1)
 
-    precipitation_today = get_precipitation(lat="48.121842", lon="11.600352", date = today)
+    # Formatting
+    now = now.strftime("%Y-%m-%dT%H:%M") 
+    last_date = last_date.strftime("%Y-%m-%dT%H:%M") 
+    
+    # now = "2022-07-07" # It rained that day
+    # last_date = "2022-07-08"
+
+    precipitation_now = get_precipitation(lat="48.121842", lon="11.600352", first_date = now, last_date=last_date)
+    print(precipitation_now)
     import matplotlib.pyplot as plt
-    plt.plot(precipitation_today)
-    plt.title("Precipitations today (in mm)")
+    plt.plot(precipitation_now)
+    plt.title("Precipitations now (in mm)")
     plt.show()
-    return None
-
-# test_precipitation()
