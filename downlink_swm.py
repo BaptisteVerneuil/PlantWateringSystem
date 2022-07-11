@@ -16,8 +16,8 @@ size = 3                    # Length of the byte array
 arr = bytearray(size)       # Init byte array
  
 # Set values (u_int8) to array positions
-arr[0] = 1
-arr[1] = 2
+arr[0] = 4
+arr[1] = 5
 arr[2] = 255
 print(arr)
 
@@ -33,7 +33,7 @@ headers = {
     'Cache-Control': 'no-cache',
     'Content-Type': 'application/json',
 }
- 
+
 # Build HTTP body
 data = '{\n"cmd": "tx",\n"EUI": "' + eui + '",\n"port": ' + str(port) + ',\n"confirmed": '+ confirmed + ',\n"data": "' + hex_string +  '",\n"appid": "' + appid + '"\n}'
  
