@@ -19,13 +19,18 @@ CayenneLPP lpp(51);      // Define the buffer size: Keep as small as possible
 char buffer[256];
 
 int sensorPin = A0;
+const int airValue = 640;   //Sensor value in the Air
+const int waterValue = 400;  //Sensor value in the water
+int soilMoisturePercent=0;
 int sensorValue = 0;
 
 void setup(void)
 {
   // Setup Serial connection
   delay(5000);
-  Serial.begin(115200);
+  if (Serial) {
+    Serial.begin(115200);
+  }
  
   // Powerup Seeeduino LoRaWAN Grove connectors
   pinMode(PIN_GROVE_POWER, OUTPUT);
@@ -46,21 +51,7 @@ void setup(void)
     Serial.print(buffer);
   }
  
-  // void setId(char *DevAddr, char *DevEUI, char *AppEUI);
-  // replace the xxxxxx and the yyyyyy below with the DevEUI and the
-  // AppEUI obtained from your registered sensor node and application
-  // in The Things Network (TTN). The numbers are hexadecimal strings
-  // without any leading prefix like "0x" and must have exactly the
-  // same number of characters as given below.
-  // lora.setId(NULL, "xxxxxxxxxxxxxxxx", "yyyyyyyyyyyyyyyy");
   lora.setId(NULL, DevEUI, AppEUI);
- 
-  // setKey(char *NwkSKey, char *AppSKey, char *AppKey);
-  // replace the zzzzzz below with the AppKey obtained from your registered
-  // application in The Things Network (TTN). The numbers are hexadecimal
-  // strings without any leading prefix like "0x" and must have exactly
-  // the same number of characters as given below.
-  // lora.setKey(NULL, NULL, "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
   lora.setKey(NULL, NULL, AppKey);
  
   lora.setDeciveMode(LWOTAA);
@@ -96,6 +87,7 @@ void setup(void)
 // LOOP --------------------------------------------------------------------
 unsigned int nloops = 0;
 void loop(void) {
+  
   nloops++;
   if (Serial) {
     Serial.println((String)"Loop " + nloops + "...");
@@ -103,14 +95,30 @@ void loop(void) {
  
   bool result = false;
 
-  sensorValue = analogRead(sensorPin);
-  Serial.print("Moisture = " );
-  Serial.println(sensorValue);
-  delay(1000);
+  // read the value from the sensor 100 times and averaging
+  for (int i = 0; i <= 100; i++) 
+  { 
+    sensorValue = sensorValue + analogRead(sensorPin); 
+    delay(1); 
+  } 
+  sensorValue = sensorValue/100.0; 
+  // Converting sensor result into percentage
+  soilMoisturePercent = map(sensorValue, airValue, waterValue, 0, 100);
+  if(soilMoisturePercent >= 100){
+    soilMoisturePercent = 100;
+  }
+  else if(soilMoisturePercent <=0){      
+    soilMoisturePercent = 0;
+  }
+
+  Serial.print("Soil Moisture = " );
+  Serial.print(soilMoisturePercent);
+  Serial.println("%");
+
  
   // Reset Cayenne buffer and add new data
   lpp.reset();                             // Resets the Cayenne buffer
-  lpp.addAnalogOutput(1, sensorValue);             // encodes the temperature value 22.5 on channel 1 in Cayenne format
+  lpp.addAnalogOutput(1, soilMoisturePercent);             // encodes the sensor value on channel 1 in Cayenne format
  
   // Transfer LoRa package
   result = lora.transferPacket(lpp.getBuffer(), lpp.getSize(), 5);                  // sends the Cayenne encoded data packet (n bytes) with a default timeout of 5 secs
@@ -123,7 +131,8 @@ void loop(void) {
     // Receive LoRaWAN package (LoraWAN Class A)
     char rx[256];
     length = lora.receivePacket(rx, 256, &rssi);
- 
+    int rx_int[length];
+    
     // Check, if a package was received
     if (length)
     {
@@ -133,6 +142,7 @@ void loop(void) {
         Serial.print("RSSI is: ");
         Serial.println(rssi);
         Serial.print("Data is: ");
+
  
         // Print received data as HEX
         for (unsigned char i = 0; i < length; i ++)
@@ -154,6 +164,6 @@ void loop(void) {
   if (Serial) {
     Serial.println((String)"Loop " + nloops + "...done!\n");
   }
-  delay(60000);
+  delay(600000); // 10 minutes
  
 }
