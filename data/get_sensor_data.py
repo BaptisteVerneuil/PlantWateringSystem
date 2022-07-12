@@ -14,9 +14,10 @@ def get_sensor_data(thing_id=80, datastream_id=269, nb_entries = 1):
         selected date, in the format yyyy-mm-dd
     """
 
-    url = "https://gi3.gis.lrg.tum.de/frost/v1.1/Things({thing_id})/Datastreams({datastream_id})/Observations?$orderby=phenomenonTime%20desc&$top={nb_entries}&$select=result,phenomenonTime"
+    # We remove data before 10/07/2022 (uncalibrated sensor)
+    url = "https://gi3.gis.lrg.tum.de/frost/v1.1/Things({thing_id})/Datastreams({datastream_id})/Observations?$orderby=phenomenonTime%20desc&$top={nb_entries}&$select=result,phenomenonTime&$filter=phenomenonTime ge 2022-07-10T00:00:00Z"
     #https://gi3.gis.lrg.tum.de/frost/v1.1/Things(80)/Datastreams(269)/Observations?$orderby=phenomenonTime%20desc&$top=1&$select=result,phenomenonTime
-
+    
     resp = requests.get(url=url.format(thing_id=str(thing_id), datastream_id=str(datastream_id), nb_entries = str(nb_entries)))
     data = resp.json() # Check the JSON Response Content documentation below
 
@@ -31,9 +32,10 @@ def get_sensor_data(thing_id=80, datastream_id=269, nb_entries = 1):
 
 if __name__ == "__main__":
 
-    moisture_today, dates = get_sensor_data(nb_entries=10)
+    moisture_today, dates = get_sensor_data(nb_entries=1000)
     import matplotlib.pyplot as plt; import matplotlib.dates
-    moisture_today.reverse()
-    plt.plot_date(moisture_today, matplotlib.dates.date2num(dates))
+
+    plt.plot_date(matplotlib.dates.date2num(dates), moisture_today)
     plt.title("Moisture of our plant today (in %)")
+    plt.ylim(0, 100)
     plt.show()
