@@ -2,8 +2,19 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 __version__ = "0.1"
+
+# Parameters depending on the plant:
 lat="48.121842"
 lon="11.600352"
+moisture_too_wet = 90
+moisture_too_dry = 40
+target_moisture = 70
+area_plant = 0.04 # in m^2
+conversion_moisture_volume = 80000 # 1L of water = +80% of soil moisture
+
+# Other parameters
+rate_weights=0.885 # importance of measurements close to now ; if 1 run every 6h and 1 info every 10 minutes: 0.885**36 = 0.0123
+
 
 
 # Setup project logger

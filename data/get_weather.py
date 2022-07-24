@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime, timedelta
 
 def get_precipitation(lat, lon, first_date, last_date):
     """
@@ -17,12 +18,11 @@ def get_precipitation(lat, lon, first_date, last_date):
     resp = requests.get(url=url.format(lat=lat, lon=lon, first_date=first_date, last_date=last_date))
     data = resp.json() # Check the JSON Response Content documentation below
 
-    return [data["weather"][i]["precipitation"] for i in range(len(data["weather"]))]
+    return [data["weather"][i]["precipitation"] for i in range(len(data["weather"]))], [datetime. strptime(data["weather"][i]["timestamp"], "%Y-%m-%dT%H:%M:%S%z") for i in range(len(data["weather"]))]
 
 if __name__ == "__main__":
 
     # Getting now's date
-    from datetime import datetime, timedelta
     now = datetime.now()
     last_date = now + timedelta(days=1)
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # now = "2022-07-07" # It rained that day
     # last_date = "2022-07-08"
 
-    precipitation_now = get_precipitation(lat="48.121842", lon="11.600352", first_date = now, last_date=last_date)
+    precipitation_now,_ = get_precipitation(lat="48.121842", lon="11.600352", first_date = now, last_date=last_date)
     print(precipitation_now)
     import matplotlib.pyplot as plt
     plt.plot(precipitation_now)
