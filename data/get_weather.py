@@ -18,9 +18,14 @@ def get_precipitation(lat, lon, first_date, last_date):
     resp = requests.get(url=url.format(lat=lat, lon=lon, first_date=first_date, last_date=last_date))
     data = resp.json() # Check the JSON Response Content documentation below
 
-    return [data["weather"][i]["precipitation"] for i in range(len(data["weather"]))], [datetime. strptime(data["weather"][i]["timestamp"], "%Y-%m-%dT%H:%M:%S%z") for i in range(len(data["weather"]))]
+    list_precipitation = [data["weather"][i]["precipitation"] for i in range(len(data["weather"]))]
+    list_date = [datetime.strptime(data["weather"][i]["timestamp"], "%Y-%m-%dT%H:%M:%S%z") for i in range(len(data["weather"]))] # We convert the string dates to datetime/datetime objects
+
+    return list_precipitation, list_date
 
 if __name__ == "__main__":
+
+    # For testing purposes
 
     # Getting now's date
     now = datetime.now()

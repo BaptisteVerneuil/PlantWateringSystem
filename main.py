@@ -11,13 +11,12 @@ import config
 logger = logging.getLogger("pws")
 
 
-
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_sensor", "-s", type=int, default=20,
+    parser.add_argument("--n_sensor", "-s", type=int, default=72,
                         help="Number of sensor entries")
-    parser.add_argument("--n_weather", "-w", type=int, default=1,
+    parser.add_argument("--days_forecast", "-d", type=int, default=1,
                         help="Number of days of weather data")
     parser.add_argument("--verbosity", "-v", type=int, default=20,
                         help="Set logging verbosity level (int), using the `logging` module's defaults: \
@@ -35,19 +34,19 @@ if __name__ == "__main__":
 
     # Getting weather data
     now = datetime.now()
-    last_date = now + timedelta(days=args.n_weather)
+    last_date = now + timedelta(days=args.days_forecast)
     now = now.strftime("%Y-%m-%dT%H:%M") # Formatting
     last_date = last_date.strftime("%Y-%m-%dT%H:%M") # Formatting
     weather_data, dates_precipitation = get_precipitation(config.lat, config.lon, first_date=now, last_date=last_date)
     logger.info("Successful acquisition of weather data")
 
-    # weather_data[5] = 5
 
     # Forecasting moisture
-    weights = [80*config.rate_weights**(len(past_moisture) - i) for i in range(len(past_moisture))]
+    weights = [80*config.rate_weights**(len(past_moisture) - i) for i in range(len(past_moisture))] # The further apart the points are, the less weight they carry
     moisture_future, regr = forecast_moisture(past_moisture, [date.timestamp() for date in dates_moisture], weights, weather_data, [date.timestamp() for date in dates_precipitation])
     logger.info("Successful forecasting of moisture")
-    
+
+    # Code used for plotting the past and the forecasted moisture
     """
     import matplotlib.pyplot as plt; import matplotlib.dates
     plt.plot_date(matplotlib.dates.date2num(dates_moisture), past_moisture)
@@ -57,17 +56,19 @@ if __name__ == "__main__":
     plt.show()
     """
 
-    # Giving order to the pump if needed
-    # 2 criteria for watering the plant : 
+    # Giving order to the pump if needed, 2 criteria for watering the plant : 
     # 1) Current moisture is not too wet
     # 2) in the next 24H, soil moisture will be too dry
-    # 3) no rain/watering of the plant in the past 6 hours # but not necessarily : if one soil moisture data every 10 minutes, and code every 6h, we would have 36 info between each run of the code, and 0.885**36=0.0123
 
-    current_moisture = past_moisture[-1]
+    current_moisture = past_moisture[-1] # current value = last value of the past
 
     if current_moisture < config.moisture_too_wet and min(moisture_future)[0] < config.moisture_too_dry:
         logger.info("Some pumping is required !")
+
+        # We set the moisture the the target moisture
         moisture_to_add = config.target_moisture - min(moisture_future)
+
+        # Sending the information to the pump
         success = send_info_pump(moisture_to_add)
         if success == 0 :
             logger.info("Successful sending of data to the pump")
