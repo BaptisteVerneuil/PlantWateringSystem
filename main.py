@@ -40,6 +40,9 @@ if __name__ == "__main__":
     weather_data, dates_precipitation = get_precipitation(config.lat, config.lon, first_date=now, last_date=last_date)
     logger.info("Successful acquisition of weather data")
 
+    # Code for simulating fake precipitations
+    # weather_data[7:11] = [1, 2, 1.7, 1]
+
 
     # Forecasting moisture
     weights = [80*config.rate_weights**(len(past_moisture) - i) for i in range(len(past_moisture))] # The further apart the points are, the less weight they carry
@@ -52,7 +55,10 @@ if __name__ == "__main__":
     plt.plot_date(matplotlib.dates.date2num(dates_moisture), past_moisture)
     plt.plot_date(matplotlib.dates.date2num(dates_precipitation), moisture_future)
     plt.title("Moisture of our plant today and tomorrow (in %)")
+    plt.axhline(y = 40, color = 'r', linestyle = 'dashed', label = "Minimum critical moisture")
+    plt.axhline(y = 80, color = 'b', linestyle = 'dashed', label = "Maximum critical moisture")
     plt.ylim(0, 100)
+    plt.legend()
     plt.show()
     """
 
