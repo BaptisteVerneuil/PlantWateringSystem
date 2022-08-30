@@ -13,9 +13,9 @@
 #include <LoRaWan.h>
  
 // Put your LoRa keys here
-#define DevEUI "00B193384D6E47B8"
-#define AppEUI "70B3D57ED002F952"
-#define AppKey "D9902CCE630C3FA5591FE68A451140D9"
+#define DevEUI "XXXXXXXXXXXXXXXX"
+#define AppEUI "XXXXXXXXXXXXXXXX"
+#define AppKey "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 // CayenneLPP --------------------------------------------------------------------
 #include <CayenneLPP.h>  // Include Cayenne Library
